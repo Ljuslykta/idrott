@@ -5,8 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const saveSettingsButton = document.getElementById('save-settings-button');
     const intervalDaysInput = document.getElementById('interval-days');
 
-    // Skapa en array för att hantera flera karaktärer.
-    // Detta gör koden skalbar om du skulle vilja ha fler i framtiden.
     const characters = [
         {
             id: 1,
@@ -30,19 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let initialCountdownDuration = parseInt(intervalDaysInput.value) * 24 * 60 * 60 * 1000;
 
-    // Generisk funktion för att uppdatera en karaktärs bild
     const updateCharacterState = (character, timeLeft) => {
+        if (!character.imageElement) return; // Säkerhetskoll
         const percentage = timeLeft / initialCountdownDuration;
+        const basePath = 'images/'; // Definiera sökvägen till bilderna
         if (percentage < 0.25) {
-            character.imageElement.src = 'images/state3.png';
+            character.imageElement.src = `${basePath}state3.png`;
         } else if (percentage < 0.75) {
-            character.imageElement.src = 'images/state2.png';
+            character.imageElement.src = `${basePath}state2.png`;
         } else {
-            character.imageElement.src = 'images/state1.png';
+            character.imageElement.src = `${basePath}state1.png`;
         }
     };
 
-    // Generisk funktion för att starta en nedräkning för en specifik karaktär
     const startCountdown = (character) => {
         clearInterval(character.countdownInterval);
         const targetTime = Date.now() + initialCountdownDuration;
@@ -52,19 +50,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (timeRemaining <= 0) {
                 clearInterval(character.countdownInterval);
-                character.timerElement.textContent = "TIDEN UTE";
-                character.streakCount = 0; // Nollställ streak för denna karaktär
+                if (character.timerElement) {
+                    character.timerElement.textContent = "TIDEN UTE";
+                }
+                character.streakCount = 0;
                 updateStreakDisplay(character);
                 updateCharacterState(character, 0);
                 return;
             }
 
-            formatTime(character.timerElement, timeRemaining);
+            if (character.timerElement) {
+                formatTime(character.timerElement, timeRemaining);
+            }
             updateCharacterState(character, timeRemaining);
         }, 1000);
     };
 
-    // Generisk funktion för att formatera tid
     const formatTime = (element, ms) => {
         const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
         const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
@@ -73,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
         element.textContent = `${d}:${h}:${m}:${s}`;
     };
 
-    // Generisk funktion för att uppdatera en karaktärs streak-visning
     const updateStreakDisplay = (character) => {
+        if (!character.streakElement) return; // Säkerhetskoll
         character.streakElement.innerHTML = '';
         for (let i = 0; i < character.streakCount; i++) {
             const streakBox = document.createElement('div');
@@ -83,35 +84,44 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Koppla händelser till varje karaktär
     characters.forEach(character => {
-        character.buttonElement.addEventListener('click', () => {
-            character.streakCount++;
-            updateStreakDisplay(character);
-            startCountdown(character); // Starta om timern för just denna karaktär
-        });
-    });
-
-    // Händelser för inställningsfönstret
-    settingsCog.addEventListener('click', () => settingsModal.classList.remove('hidden'));
-
-    saveSettingsButton.addEventListener('click', () => {
-        const days = parseInt(intervalDaysInput.value);
-        if (days > 0) {
-            initialCountdownDuration = days * 24 * 60 * 60 * 1000;
-            settingsModal.classList.add('hidden');
-            // Starta om alla timers med de nya inställningarna
-            characters.forEach(character => {
-                character.streakCount = 0; // Nollställ streaks vid ändring
+        // Kontrollera att knappen finns innan du lägger till en event listener
+        if (character.buttonElement) {
+            character.buttonElement.addEventListener('click', () => {
+                character.streakCount++;
                 updateStreakDisplay(character);
                 startCountdown(character);
             });
         }
     });
 
-    // Starta alla timers när sidan laddas
+    if (settingsCog && settingsModal) {
+        settingsCog.addEventListener('click', () => settingsModal.classList.remove('hidden'));
+    }
+
+    if (saveSettingsButton && settingsModal) {
+        saveSettingsButton.addEventListener('click', () => {
+            const days = parseInt(intervalDaysInput.value);
+            if (days > 0) {
+                initialCountdownDuration = days * 24 * 60 * 60 * 1000;
+                settingsModal.classList.add('hidden');
+                characters.forEach(character => {
+                    character.streakCount = 0;
+                    updateStreakDisplay(character);
+                    startCountdown(character);
+                });
+            }
+        });
+    }
+
+    // Starta allt när sidan laddas
     characters.forEach(character => {
-        startCountdown(character);
-        updateStreakDisplay(character);
+        // Kontrollera att vi faktiskt har en karaktär att starta
+        if (character && character.timerElement) {
+            startCountdown(character);
+            updateStreakDisplay(character);
+        } else {
+            console.error(`Kunde inte initiera karaktär med id: ${character.id}. Kontrollera HTML-elementens ID:n.`);
+        }
     });
 });
