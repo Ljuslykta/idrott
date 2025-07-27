@@ -1,18 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- FIREBASE KONFIGURATION ---
-    // Klistra in firebaseConfig-objektet du kopierade från Firebase Console här
-const firebaseConfig = {
-  apiKey: "AIzaSyCkL0jppz2oQrK6QhvBzpVw_PFtJ5Sokk8",
-  authDomain: "idrott-eb871.firebaseapp.com",
-  databaseURL: "https://idrott-eb871-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "idrott-eb871",
-  storageBucket: "idrott-eb871.firebasestorage.app",
-  messagingSenderId: "22564358683",
-  appId: "1:22564358683:web:5b0e5fd0c8c49f161446be",
-  measurementId: "G-H3DF8TRNDV"
-};
+    const firebaseConfig = {
+      apiKey: "DIN_API_KEY",
+      authDomain: "DITT_PROJEKT.firebaseapp.com",
+      databaseURL: "https://DITT_PROJEKT-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "DITT_PROJEKT",
+      storageBucket: "DITT_PROJEKT.appspot.com",
+      messagingSenderId: "DIN_SENDER_ID",
+      appId: "DIN_APP_ID"
+    };
 
-     const app = firebase.initializeApp(firebaseConfig);
+    const app = firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
     // --- ELEMENT OCH GRUNDLÄGGANDE STRUKTUR ---
@@ -67,11 +65,25 @@ const firebaseConfig = {
         saveStateToFirebase();
     }
 
+    // --- UPPDATERAD FUNKTION FÖR BILDER ---
     const updateCharacterState = (character, timeLeft) => {
         if (!character.elements.image) return;
+
         const durationInMs = character.state.durationDays * 24 * 60 * 60 * 1000;
-        const percentage = timeLeft / durationInMs;
-        let newState = (percentage < 0.25) ? 'state3' : (percentage < 0.75) ? 'state2' : 'state1';
+        // Säkerställer att timeLeft inte är negativt
+        const positiveTimeLeft = Math.max(0, timeLeft);
+        // Beräkna procent av tiden som är kvar (ett värde mellan 1.0 och 0.0)
+        const percentage = positiveTimeLeft / durationInMs;
+
+        // Mappa procenten till ett bildnummer från 1 till 7.
+        // När tiden går ner (percentage -> 0), går bildnumret upp (-> 7).
+        // Vi multiplicerar med 6.999 för att undvika att `floor` ger fel index vid 100%.
+        const imageNumber = 7 - Math.floor(percentage * 6.999);
+
+        // Skapa det nya bildnamnet
+        const newState = `kanin${imageNumber}`;
+
+        // Uppdatera bara bilden om den har ändrats, för att undvika flimmer
         if (newState !== character.state.currentState) {
             character.elements.image.src = `images/${newState}.png`;
             character.state.currentState = newState;
@@ -84,35 +96,22 @@ const firebaseConfig = {
     characters.forEach(character => { if (character.elements.button) { character.elements.button.addEventListener('click', () => { resetAndStartCountdown(character); }); } });
     if (settingsCog) { settingsCog.addEventListener('click', () => settingsModal.classList.remove('hidden')); }
 
-    // --- UPPDATERAD HÄNDELSEHANTERARE FÖR SPARA-KNAPPEN ---
     if (saveSettingsButton) {
         saveSettingsButton.addEventListener('click', () => {
             characters.forEach(char => {
                 const newDays = parseInt(char.elements.intervalInput.value);
                 if (newDays > 0) {
-                    // 1. Uppdatera antalet dagar
                     char.state.durationDays = newDays;
-
-                    // 2. Streak-räknaren behålls (rörs ej)
-
-                    // 3. Beräkna den nya sluttiden från och med NU
                     const durationInMs = newDays * 24 * 60 * 60 * 1000;
                     char.state.targetTime = Date.now() + durationInMs;
-
-                    // 4. Starta om den visuella nedräkningen
                     startOrContinueCountdown(char);
                 }
             });
-
-            // 5. Spara hela det nya tillståndet till Firebase
             saveStateToFirebase();
-
-            // 6. Göm inställningsfönstret
             settingsModal.classList.add('hidden');
         });
     }
 
-    // --- INITIALISERING (oförändrad) ---
     function initializeApp() {
         database.ref('characters').on('value', (snapshot) => {
             const savedChars = snapshot.val();
