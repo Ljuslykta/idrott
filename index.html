@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Träningsnedräkning</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Importerar en ikon (kugghjul) från Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+</head>
+<body>
+
+    <div class="main-container">
+
+        <!-- Behållare för karaktärerna -->
+        <div class="character-wrapper">
+            <img id="character-one" src="images/state1.png" alt="Karaktär 1">
+            <img id="character-two" src="images/state1.png" alt="Karaktär 2">
+        </div>
+
+        <!-- Visning av nedräkningstiden -->
+        <div id="timer-display">
+            --:--:--:--
+        </div>
+
+        <!-- Knapp för att slutföra och återställa -->
+        <button id="complete-button">Pass Slutfört</button>
+
+        <!-- Behållare för "streak" kuber -->
+        <div id="streak-counter">
+            <!-- Gröna kuber läggs till här via JavaScript -->
+        </div>
+
+    </div>
+
+    <!-- Inställningsikon och modalfönster -->
+    <div id="settings-cog">
+        <i class="fa-solid fa-gear"></i>
+    </div>
+
+    <div id="settings-modal" class="hidden">
+        <div class="modal-body">
+            <h3>Inställningar</h3>
+            <label for="interval-days">Ange nedräkningsintervall (dagar):</label>
+            <input type="number" id="interval-days" value="3" min="1">
+            <button id="save-settings-button">Spara och starta om</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
