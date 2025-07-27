@@ -21,35 +21,23 @@ const firebaseConfig = {
     const settingsCog = document.getElementById('settings-cog');
     const settingsModal = document.getElementById('settings-modal');
     const saveSettingsButton = document.getElementById('save-settings-button');
-    // Hämta de nya, specifika input-fälten
     const intervalDaysInput1 = document.getElementById('interval-days-1');
     const intervalDaysInput2 = document.getElementById('interval-days-2');
 
     const characters = [
-        {
-            id: 1,
-            elements: { image: document.getElementById('character-one'), timer: document.getElementById('timer-one'), button: document.getElementById('complete-button-one'), streak: document.getElementById('streak-counter-one'), intervalInput: intervalDaysInput1 },
-            // Varje karaktär får en egen durationDays
-            state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null, durationDays: 3 }
-        },
-        {
-            id: 2,
-            elements: { image: document.getElementById('character-two'), timer: document.getElementById('timer-two'), button: document.getElementById('complete-button-two'), streak: document.getElementById('streak-counter-two'), intervalInput: intervalDaysInput2 },
-            state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null, durationDays: 4 }
-        }
+        { id: 1, elements: { image: document.getElementById('character-one'), timer: document.getElementById('timer-one'), button: document.getElementById('complete-button-one'), streak: document.getElementById('streak-counter-one'), intervalInput: intervalDaysInput1 }, state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null, durationDays: 3 } },
+        { id: 2, elements: { image: document.getElementById('character-two'), timer: document.getElementById('timer-two'), button: document.getElementById('complete-button-two'), streak: document.getElementById('streak-counter-two'), intervalInput: intervalDaysInput2 }, state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null, durationDays: 4 } }
     ];
 
-    // --- FUNKTION FÖR ATT SPARA DATA TILL FIREBASE ---
     function saveStateToFirebase() {
         const stateToSave = characters.map(char => ({
             targetTime: char.state.targetTime,
             streakCount: char.state.streakCount,
-            durationDays: char.state.durationDays // Spara den individuella inställningen
+            durationDays: char.state.durationDays
         }));
         database.ref('characters').set(stateToSave);
     }
 
-    // --- UPPDATERADE KÄRNFUNKTIONER ---
     function startOrContinueCountdown(character) {
         clearInterval(character.state.countdownInterval);
         character.state.countdownInterval = setInterval(() => {
@@ -72,10 +60,8 @@ const firebaseConfig = {
 
     function resetAndStartCountdown(character) {
         character.state.streakCount++;
-        // Använd karaktärens EGEN durationDays för att beräkna tiden
         const durationInMs = character.state.durationDays * 24 * 60 * 60 * 1000;
         character.state.targetTime = Date.now() + durationInMs;
-
         updateStreakDisplay(character);
         startOrContinueCountdown(character);
         saveStateToFirebase();
@@ -92,44 +78,51 @@ const firebaseConfig = {
         }
     };
 
-    // Oförändrade funktioner
     const formatTime = (character, ms) => { if (!character.elements.timer) return; const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0'); const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0'); const newTimeText = `${d}:${h}`; if (newTimeText !== character.state.lastDisplayedTime) { character.elements.timer.textContent = newTimeText; character.state.lastDisplayedTime = newTimeText; } };
     const updateStreakDisplay = (character) => { if (!character.elements.streak) return; character.elements.streak.innerHTML = ''; for (let i = 0; i < character.state.streakCount; i++) { const streakBox = document.createElement('div'); streakBox.className = 'streak-box'; character.elements.streak.appendChild(streakBox); } };
 
-    // --- HÄNDELSEHANTERARE ---
     characters.forEach(character => { if (character.elements.button) { character.elements.button.addEventListener('click', () => { resetAndStartCountdown(character); }); } });
     if (settingsCog) { settingsCog.addEventListener('click', () => settingsModal.classList.remove('hidden')); }
 
-    // Spara-knappen uppdaterar nu varje karaktärs inställning
+    // --- UPPDATERAD HÄNDELSEHANTERARE FÖR SPARA-KNAPPEN ---
     if (saveSettingsButton) {
         saveSettingsButton.addEventListener('click', () => {
-            // Uppdatera den lokala datan från input-fälten
-            characters[0].state.durationDays = parseInt(intervalDaysInput1.value) || 3;
-            characters[1].state.durationDays = parseInt(intervalDaysInput2.value) || 4;
+            characters.forEach(char => {
+                const newDays = parseInt(char.elements.intervalInput.value);
+                if (newDays > 0) {
+                    // 1. Uppdatera antalet dagar
+                    char.state.durationDays = newDays;
 
-            // Spara den nya datan till Firebase
+                    // 2. Streak-räknaren behålls (rörs ej)
+
+                    // 3. Beräkna den nya sluttiden från och med NU
+                    const durationInMs = newDays * 24 * 60 * 60 * 1000;
+                    char.state.targetTime = Date.now() + durationInMs;
+
+                    // 4. Starta om den visuella nedräkningen
+                    startOrContinueCountdown(char);
+                }
+            });
+
+            // 5. Spara hela det nya tillståndet till Firebase
             saveStateToFirebase();
 
+            // 6. Göm inställningsfönstret
             settingsModal.classList.add('hidden');
-            // Notera: Vi återställer inte längre timers automatiskt,
-            // de nya värdena kommer att användas vid nästa "Pass Slutfört".
         });
     }
 
-    // --- INITIALISERING VID SIDLADDNING ---
+    // --- INITIALISERING (oförändrad) ---
     function initializeApp() {
         database.ref('characters').on('value', (snapshot) => {
             const savedChars = snapshot.val();
-
             if (savedChars) {
                 characters.forEach((char, index) => {
                     const savedChar = savedChars[index];
                     if (savedChar) {
                         char.state.targetTime = savedChar.targetTime;
                         char.state.streakCount = savedChar.streakCount;
-                        // Ladda den individuella inställningen
                         char.state.durationDays = savedChar.durationDays || char.state.durationDays;
-                        // Uppdatera värdet i inställningsfönstret
                         char.elements.intervalInput.value = char.state.durationDays;
                     }
                 });
