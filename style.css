@@ -16,12 +16,11 @@ body {
     margin: 0;
 }
 
-/* Ny container för att hantera layouten av de två karaktärerna */
 .page-wrapper {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    gap: 100px; /* Här justerar du avståndet mellan karaktärerna */
+    gap: 100px;
 }
 
 .character-area {
@@ -30,20 +29,25 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    width: 350px; /* Ger en fast bredd för varje sektion */
+    width: 350px;
 }
 
+/* --- ÄNDRINGAR HÄR --- */
 .character-wrapper img {
-    width: 120px;
-    height: 120px;
+    /* 1. Gör behållaren för bilden mycket större */
+    width: 250px;
+    height: 250px;
+
     background-color: rgba(0,0,0,0.2);
-    border-radius: 50%;
+    border-radius: 50%; /* Behåller den runda ramen */
     transition: transform 0.3s ease;
+
+    /* 2. Se till att bilden inte sträcks ut inuti ramen */
+    object-fit: contain;
 }
 
-/* Gemensam klass för timer-display */
 .timer-display {
-    font-size: 3rem; /* Justerad storlek */
+    font-size: 3rem;
     font-weight: bold;
     margin: 20px 0;
     letter-spacing: 2px;
@@ -79,7 +83,6 @@ body {
     border-radius: 5px;
 }
 
-/* Inställningar (oförändrad) */
 #settings-cog {
     position: absolute;
     top: 25px;
@@ -102,8 +105,21 @@ body {
 #settings-modal.hidden { display: none; }
 
 .modal-body {
-    background: var(--primary-color); padding: 30px; border-radius: 10px;
-    text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: var(--primary-color);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.setting-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
 }
 
 .modal-body input { margin: 15px 0; padding: 10px; width: 80px; text-align: center; }
@@ -112,6 +128,9 @@ body {
     background-color: var(--success-color); color: white; border: none;
     padding: 10px 20px; cursor: pointer; border-radius: 5px;
 }
+
+
+/* Styling för laddning och dold-klass */
 #loader {
     font-size: 1.5rem;
     color: var(--light-grey);
@@ -119,26 +138,4 @@ body {
 
 .hidden {
     display: none !important;
-}
-#loader {
-    font-size: 1.5rem;
-    color: var(--light-grey);
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Ny styling för inställningsmodalen */
-.modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* Lägger till utrymme mellan elementen */
-}
-
-.setting-input-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
 }
