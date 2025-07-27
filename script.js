@@ -1,14 +1,24 @@
 document.addEventListener("DOMContentLoaded", () => {
     // --- FIREBASE KONFIGURATION ---
-    const firebaseConfig = {
-      apiKey: "DIN_API_KEY",
-      authDomain: "DITT_PROJEKT.firebaseapp.com",
-      databaseURL: "https://DITT_PROJEKT-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "DITT_PROJEKT",
-      storageBucket: "DITT_PROJEKT.appspot.com",
-      messagingSenderId: "DIN_SENDER_ID",
-      appId: "DIN_APP_ID"
-    };
+const firebaseConfig = {
+
+  apiKey: "AIzaSyCkL0jppz2oQrK6QhvBzpVw_PFtJ5Sokk8",
+
+  authDomain: "idrott-eb871.firebaseapp.com",
+
+  databaseURL: "https://idrott-eb871-default-rtdb.europe-west1.firebasedatabase.app",
+
+  projectId: "idrott-eb871",
+
+  storageBucket: "idrott-eb871.firebasestorage.app",
+
+  messagingSenderId: "22564358683",
+
+  appId: "1:22564358683:web:5b0e5fd0c8c49f161446be",
+
+  measurementId: "G-H3DF8TRNDV"
+
+};
 
     const app = firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
