@@ -5,35 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Träningsnedräkning</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Importerar en ikon (kugghjul) från Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
 
-    <div class="main-container">
+    <!-- Ny omslutare för att placera karaktärerna sida vid sida -->
+    <div class="page-wrapper">
 
-        <!-- Behållare för karaktärerna -->
-        <div class="character-wrapper">
-            <img id="character-one" src="images/state1.png" alt="Karaktär 1">
-            <img id="character-two" src="images/state1.png" alt="Karaktär 2">
+        <!-- Sektion för Karaktär 1 -->
+        <div class="character-area">
+            <div class="character-wrapper">
+                <img id="character-one" src="images/state1.png" alt="Karaktär 1">
+            </div>
+            <div id="timer-one" class="timer-display">--:--:--:--</div>
+            <button id="complete-button-one" class="complete-button">Pass Slutfört</button>
+            <div id="streak-counter-one" class="streak-counter"></div>
         </div>
 
-        <!-- Visning av nedräkningstiden -->
-        <div id="timer-display">
-            --:--:--:--
-        </div>
-
-        <!-- Knapp för att slutföra och återställa -->
-        <button id="complete-button">Pass Slutfört</button>
-
-        <!-- Behållare för "streak" kuber -->
-        <div id="streak-counter">
-            <!-- Gröna kuber läggs till här via JavaScript -->
+        <!-- Sektion för Karaktär 2 -->
+        <div class="character-area">
+            <div class="character-wrapper">
+                <img id="character-two" src="images/state1.png" alt="Karaktär 2">
+            </div>
+            <div id="timer-two" class="timer-display">--:--:--:--</div>
+            <button id="complete-button-two" class="complete-button">Pass Slutfört</button>
+            <div id="streak-counter-two" class="streak-counter"></div>
         </div>
 
     </div>
 
-    <!-- Inställningsikon och modalfönster -->
+    <!-- Inställningsikon och modalfönster (fortfarande gemensamt) -->
     <div id="settings-cog">
         <i class="fa-solid fa-gear"></i>
     </div>

@@ -1,104 +1,117 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    // Hämta alla nödvändiga element från HTML
-    const timerDisplay = document.getElementById('timer-display');
-    const completeButton = document.getElementById('complete-button');
-    const characterOne = document.getElementById('character-one');
-    const characterTwo = document.getElementById('character-two');
-    const streakCounter = document.getElementById('streak-counter');
+    // Hämta globala element
     const settingsCog = document.getElementById('settings-cog');
     const settingsModal = document.getElementById('settings-modal');
     const saveSettingsButton = document.getElementById('save-settings-button');
     const intervalDaysInput = document.getElementById('interval-days');
 
-    let countdownInterval;
-    let countdownDuration = parseInt(intervalDaysInput.value) * 24 * 60 * 60 * 1000;
-    let streakCount = 0;
+    // Skapa en array för att hantera flera karaktärer.
+    // Detta gör koden skalbar om du skulle vilja ha fler i framtiden.
+    const characters = [
+        {
+            id: 1,
+            imageElement: document.getElementById('character-one'),
+            timerElement: document.getElementById('timer-one'),
+            buttonElement: document.getElementById('complete-button-one'),
+            streakElement: document.getElementById('streak-counter-one'),
+            countdownInterval: null,
+            streakCount: 0,
+        },
+        {
+            id: 2,
+            imageElement: document.getElementById('character-two'),
+            timerElement: document.getElementById('timer-two'),
+            buttonElement: document.getElementById('complete-button-two'),
+            streakElement: document.getElementById('streak-counter-two'),
+            countdownInterval: null,
+            streakCount: 0,
+        }
+    ];
 
-    // Funktion för att uppdatera karaktärernas bilder
-    const updateCharacterState = (timeLeft) => {
-        const percentage = timeLeft / countdownDuration;
-        // Byt bilder baserat på hur mycket tid som återstår
-        // Du behöver skapa dessa bilder: state1.png, state2.png, state3.png
+    let initialCountdownDuration = parseInt(intervalDaysInput.value) * 24 * 60 * 60 * 1000;
+
+    // Generisk funktion för att uppdatera en karaktärs bild
+    const updateCharacterState = (character, timeLeft) => {
+        const percentage = timeLeft / initialCountdownDuration;
         if (percentage < 0.25) {
-            characterOne.src = 'images/state3.png';
-            characterTwo.src = 'images/state3.png';
+            character.imageElement.src = 'images/state3.png';
         } else if (percentage < 0.75) {
-            characterOne.src = 'images/state2.png';
-            characterTwo.src = 'images/state2.png';
+            character.imageElement.src = 'images/state2.png';
         } else {
-            characterOne.src = 'images/state1.png';
-            characterTwo.src = 'images/state1.png';
+            character.imageElement.src = 'images/state1.png';
         }
     };
 
-    // Funktion som startar och hanterar nedräkningen
-    const startCountdown = () => {
-        clearInterval(countdownInterval); // Rensa eventuell gammal timer
-        const targetTime = Date.now() + countdownDuration;
+    // Generisk funktion för att starta en nedräkning för en specifik karaktär
+    const startCountdown = (character) => {
+        clearInterval(character.countdownInterval);
+        const targetTime = Date.now() + initialCountdownDuration;
 
-        countdownInterval = setInterval(() => {
+        character.countdownInterval = setInterval(() => {
             const timeRemaining = targetTime - Date.now();
 
             if (timeRemaining <= 0) {
-                clearInterval(countdownInterval);
-                timerDisplay.textContent = "TIDEN UTE";
-                streakCount = 0; // Nollställ streak
-                updateStreakDisplay();
-                updateCharacterState(0);
+                clearInterval(character.countdownInterval);
+                character.timerElement.textContent = "TIDEN UTE";
+                character.streakCount = 0; // Nollställ streak för denna karaktär
+                updateStreakDisplay(character);
+                updateCharacterState(character, 0);
                 return;
             }
 
-            // Uppdatera timer-display och karaktärer
-            formatTime(timeRemaining);
-            updateCharacterState(timeRemaining);
-
+            formatTime(character.timerElement, timeRemaining);
+            updateCharacterState(character, timeRemaining);
         }, 1000);
     };
 
-    // Formatera millisekunder till DD:HH:MM:SS
-    const formatTime = (ms) => {
-        const days = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-        const hours = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-        const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-        const seconds = Math.floor((ms % (1000 * 60)) / 1000).toString().padStart(2, '0');
-        timerDisplay.textContent = `${days}:${hours}:${minutes}:${seconds}`;
+    // Generisk funktion för att formatera tid
+    const formatTime = (element, ms) => {
+        const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+        const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+        const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        const s = Math.floor((ms % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        element.textContent = `${d}:${h}:${m}:${s}`;
     };
 
-    // Uppdatera visningen av streak-kuber
-    const updateStreakDisplay = () => {
-        streakCounter.innerHTML = '';
-        for (let i = 0; i < streakCount; i++) {
+    // Generisk funktion för att uppdatera en karaktärs streak-visning
+    const updateStreakDisplay = (character) => {
+        character.streakElement.innerHTML = '';
+        for (let i = 0; i < character.streakCount; i++) {
             const streakBox = document.createElement('div');
             streakBox.className = 'streak-box';
-            streakCounter.appendChild(streakBox);
+            character.streakElement.appendChild(streakBox);
         }
     };
 
-    // Händelse för "Pass Slutfört"-knappen
-    completeButton.addEventListener('click', () => {
-        streakCount++;
-        updateStreakDisplay();
-        startCountdown(); // Starta om timern för nästa intervall
+    // Koppla händelser till varje karaktär
+    characters.forEach(character => {
+        character.buttonElement.addEventListener('click', () => {
+            character.streakCount++;
+            updateStreakDisplay(character);
+            startCountdown(character); // Starta om timern för just denna karaktär
+        });
     });
 
     // Händelser för inställningsfönstret
-    settingsCog.addEventListener('click', () => {
-        settingsModal.classList.remove('hidden');
-    });
+    settingsCog.addEventListener('click', () => settingsModal.classList.remove('hidden'));
 
     saveSettingsButton.addEventListener('click', () => {
         const days = parseInt(intervalDaysInput.value);
         if (days > 0) {
-            countdownDuration = days * 24 * 60 * 60 * 1000;
+            initialCountdownDuration = days * 24 * 60 * 60 * 1000;
             settingsModal.classList.add('hidden');
-            streakCount = 0; // Nollställ streak vid ändring av inställning
-            updateStreakDisplay();
-            startCountdown();
+            // Starta om alla timers med de nya inställningarna
+            characters.forEach(character => {
+                character.streakCount = 0; // Nollställ streaks vid ändring
+                updateStreakDisplay(character);
+                startCountdown(character);
+            });
         }
     });
 
-    // Kör igång allt
-    startCountdown();
-    updateStreakDisplay();
+    // Starta alla timers när sidan laddas
+    characters.forEach(character => {
+        startCountdown(character);
+        updateStreakDisplay(character);
+    });
 });

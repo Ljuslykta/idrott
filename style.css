@@ -16,19 +16,21 @@ body {
     margin: 0;
 }
 
-.main-container {
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.character-wrapper {
+/* Ny container för att hantera layouten av de två karaktärerna */
+.page-wrapper {
     display: flex;
     justify-content: center;
-    gap: 60px;
-    margin-bottom: 30px;
+    align-items: flex-start;
+    gap: 100px; /* Här justerar du avståndet mellan karaktärerna */
+}
+
+.character-area {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    width: 350px; /* Ger en fast bredd för varje sektion */
 }
 
 .character-wrapper img {
@@ -39,14 +41,15 @@ body {
     transition: transform 0.3s ease;
 }
 
-#timer-display {
-    font-size: 4rem;
+/* Gemensam klass för timer-display */
+.timer-display {
+    font-size: 3rem; /* Justerad storlek */
     font-weight: bold;
-    margin-bottom: 20px;
-    letter-spacing: 4px;
+    margin: 20px 0;
+    letter-spacing: 2px;
 }
 
-#complete-button {
+.complete-button {
     background-color: var(--secondary-color);
     color: white;
     border: none;
@@ -57,16 +60,16 @@ body {
     transition: background-color 0.3s;
 }
 
-#complete-button:hover {
+.complete-button:hover {
     background-color: #2980b9;
 }
 
-#streak-counter {
-    margin-top: 30px;
+.streak-counter {
+    margin-top: 25px;
     display: flex;
     justify-content: center;
     gap: 8px;
-    min-height: 25px; /* Ser till att layouten inte hoppar */
+    min-height: 25px;
 }
 
 .streak-box {
@@ -76,7 +79,7 @@ body {
     border-radius: 5px;
 }
 
-/* Inställningar */
+/* Inställningar (oförändrad) */
 #settings-cog {
     position: absolute;
     top: 25px;
@@ -91,41 +94,21 @@ body {
 }
 
 #settings-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    display: flex; justify-content: center; align-items: center;
 }
 
-#settings-modal.hidden {
-    display: none;
-}
+#settings-modal.hidden { display: none; }
 
 .modal-body {
-    background: var(--primary-color);
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    background: var(--primary-color); padding: 30px; border-radius: 10px;
+    text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
 }
 
-.modal-body input {
-    margin: 15px 0;
-    padding: 10px;
-    width: 80px;
-    text-align: center;
-}
+.modal-body input { margin: 15px 0; padding: 10px; width: 80px; text-align: center; }
 
 .modal-body button {
-    background-color: var(--success-color);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 5px;
+    background-color: var(--success-color); color: white; border: none;
+    padding: 10px 20px; cursor: pointer; border-radius: 5px;
 }
