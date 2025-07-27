@@ -29,9 +29,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let initialCountdownDuration = parseInt(intervalDaysInput.value) * 24 * 60 * 60 * 1000;
 
     const updateCharacterState = (character, timeLeft) => {
-        if (!character.imageElement) return; // Säkerhetskoll
+        if (!character.imageElement) return;
         const percentage = timeLeft / initialCountdownDuration;
-        const basePath = 'images/'; // Definiera sökvägen till bilderna
+        const basePath = 'images/';
         if (percentage < 0.25) {
             character.imageElement.src = `${basePath}state3.png`;
         } else if (percentage < 0.75) {
@@ -63,19 +63,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 formatTime(character.timerElement, timeRemaining);
             }
             updateCharacterState(character, timeRemaining);
-        }, 1000);
+        }, 1000); // Vi uppdaterar fortfarande varje sekund för att logiken ska vara exakt
     };
 
+    // --- ÄNDRING HÄR ---
+    // Denna funktion visar nu endast dagar och timmar.
     const formatTime = (element, ms) => {
         const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
         const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-        const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-        const s = Math.floor((ms % (1000 * 60)) / 1000).toString().padStart(2, '0');
-        element.textContent = `${d}:${h}:${m}:${s}`;
+
+        // Sätt ihop den nya, kortare tidsträngen
+        element.textContent = `${d}:${h}`;
     };
 
     const updateStreakDisplay = (character) => {
-        if (!character.streakElement) return; // Säkerhetskoll
+        if (!character.streakElement) return;
         character.streakElement.innerHTML = '';
         for (let i = 0; i < character.streakCount; i++) {
             const streakBox = document.createElement('div');
@@ -85,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     characters.forEach(character => {
-        // Kontrollera att knappen finns innan du lägger till en event listener
         if (character.buttonElement) {
             character.buttonElement.addEventListener('click', () => {
                 character.streakCount++;
@@ -114,9 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Starta allt när sidan laddas
     characters.forEach(character => {
-        // Kontrollera att vi faktiskt har en karaktär att starta
         if (character && character.timerElement) {
             startCountdown(character);
             updateStreakDisplay(character);
