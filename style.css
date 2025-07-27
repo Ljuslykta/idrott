@@ -112,3 +112,11 @@ body {
     background-color: var(--success-color); color: white; border: none;
     padding: 10px 20px; cursor: pointer; border-radius: 5px;
 }
+#loader {
+    font-size: 1.5rem;
+    color: var(--light-grey);
+}
+
+.hidden {
+    display: none !important;
+}

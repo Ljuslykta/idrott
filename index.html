@@ -9,35 +9,26 @@
 </head>
 <body>
 
-    <div class="page-wrapper">
+    <!-- Laddningsindikator som visas i början -->
+    <div id="loader">Laddar data...</div>
 
-        <!-- Sektion för Karaktär 1 -->
+    <!-- Huvudinnehållet är dolt tills datan har laddats -->
+    <div class="page-wrapper hidden" id="main-content">
         <div class="character-area">
-            <div class="character-wrapper">
-                <!-- Korrekt sökväg till bilden -->
-                <img id="character-one" src="images/state1.png" alt="Karaktär 1">
-            </div>
-            <div id="timer-one" class="timer-display">--:--:--:--</div>
+            <div class="character-wrapper"><img id="character-one" src="images/state1.png" alt="Karaktär 1"></div>
+            <div id="timer-one" class="timer-display">--:--</div>
             <button id="complete-button-one" class="complete-button">Pass Slutfört</button>
             <div id="streak-counter-one" class="streak-counter"></div>
         </div>
-
-        <!-- Sektion för Karaktär 2 -->
         <div class="character-area">
-            <div class="character-wrapper">
-                <!-- Korrekt sökväg till bilden -->
-                <img id="character-two" src="images/state1.png" alt="Karaktär 2">
-            </div>
-            <div id="timer-two" class="timer-display">--:--:--:--</div>
+            <div class="character-wrapper"><img id="character-two" src="images/state1.png" alt="Karaktär 2"></div>
+            <div id="timer-two" class="timer-display">--:--</div>
             <button id="complete-button-two" class="complete-button">Pass Slutfört</button>
             <div id="streak-counter-two" class="streak-counter"></div>
         </div>
-
     </div>
 
-    <div id="settings-cog">
-        <i class="fa-solid fa-gear"></i>
-    </div>
+    <div id="settings-cog"><i class="fa-solid fa-gear"></i></div>
 
     <div id="settings-modal" class="hidden">
         <div class="modal-body">
@@ -48,7 +39,11 @@
         </div>
     </div>
 
-    <!-- Se till att scriptet laddas sist -->
+    <!-- Firebase SDK - MÅSTE vara före din script.js -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- Din egen JavaScript-fil -->
     <script src="script.js"></script>
 </body>
 </html>
