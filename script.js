@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Hämta globala element
     const settingsCog = document.getElementById('settings-cog');
     const settingsModal = document.getElementById('settings-modal');
     const saveSettingsButton = document.getElementById('save-settings-button');
@@ -14,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
             streakElement: document.getElementById('streak-counter-one'),
             countdownInterval: null,
             streakCount: 0,
+            lastDisplayedTime: null // <<< NY EGENSKAP
         },
         {
             id: 2,
@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
             streakElement: document.getElementById('streak-counter-two'),
             countdownInterval: null,
             streakCount: 0,
+            lastDisplayedTime: null // <<< NY EGENSKAP
         }
     ];
 
@@ -44,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const startCountdown = (character) => {
         clearInterval(character.countdownInterval);
         const targetTime = Date.now() + initialCountdownDuration;
+        character.lastDisplayedTime = null; // Nollställ vid omstart
 
         character.countdownInterval = setInterval(() => {
             const timeRemaining = targetTime - Date.now();
@@ -59,21 +61,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            if (character.timerElement) {
-                formatTime(character.timerElement, timeRemaining);
-            }
+            // Anropet uppdaterat för att skicka hela objektet
+            formatTime(character, timeRemaining);
             updateCharacterState(character, timeRemaining);
-        }, 1000); // Vi uppdaterar fortfarande varje sekund för att logiken ska vara exakt
+        }, 1000);
     };
 
-    // --- ÄNDRING HÄR ---
-    // Denna funktion visar nu endast dagar och timmar.
-    const formatTime = (element, ms) => {
+    // --- HELT OMARBETAD FUNKTION ---
+    // Denna funktion uppdaterar bara DOM om den visade tiden har ändrats
+    const formatTime = (character, ms) => {
+        if (!character.timerElement) return;
+
         const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
         const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
 
-        // Sätt ihop den nya, kortare tidsträngen
-        element.textContent = `${d}:${h}`;
+        const newTimeText = `${d}:${h}`;
+
+        // Jämför den nya tiden med den gamla. Uppdatera BARA om de är olika.
+        if (newTimeText !== character.lastDisplayedTime) {
+            character.timerElement.textContent = newTimeText;
+            character.lastDisplayedTime = newTimeText; // Spara den nya tiden
+        }
     };
 
     const updateStreakDisplay = (character) => {
