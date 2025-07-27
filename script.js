@@ -13,7 +13,8 @@ document.addEventListener("DOMContentLoaded", () => {
             streakElement: document.getElementById('streak-counter-one'),
             countdownInterval: null,
             streakCount: 0,
-            lastDisplayedTime: null // <<< NY EGENSKAP
+            lastDisplayedTime: null,
+            currentState: null // <<< NY EGENSKAP
         },
         {
             id: 2,
@@ -23,22 +24,36 @@ document.addEventListener("DOMContentLoaded", () => {
             streakElement: document.getElementById('streak-counter-two'),
             countdownInterval: null,
             streakCount: 0,
-            lastDisplayedTime: null // <<< NY EGENSKAP
+            lastDisplayedTime: null,
+            currentState: null // <<< NY EGENSKAP
         }
     ];
 
     let initialCountdownDuration = parseInt(intervalDaysInput.value) * 24 * 60 * 60 * 1000;
 
+    // --- HELT OMARBETAD FUNKTION ---
+    // Denna funktion uppdaterar nu bara bilden om tillståndet ändras
     const updateCharacterState = (character, timeLeft) => {
         if (!character.imageElement) return;
+
         const percentage = timeLeft / initialCountdownDuration;
-        const basePath = 'images/';
+        let newState;
+
+        // 1. Räkna ut vilket tillstånd som borde gälla
         if (percentage < 0.25) {
-            character.imageElement.src = `${basePath}state3.png`;
+            newState = 'state3';
         } else if (percentage < 0.75) {
-            character.imageElement.src = `${basePath}state2.png`;
+            newState = 'state2';
         } else {
-            character.imageElement.src = `${basePath}state1.png`;
+            newState = 'state1';
+        }
+
+        // 2. Jämför med nuvarande tillstånd. Uppdatera BARA om det är en ändring.
+        if (newState !== character.currentState) {
+            const basePath = 'images/';
+            character.imageElement.src = `${basePath}${newState}.png`;
+            character.currentState = newState; // Kom ihåg det nya tillståndet
+            // console.log(`Karaktär ${character.id} ändrade tillstånd till: ${newState}`); // För felsökning
         }
     };
 
@@ -46,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearInterval(character.countdownInterval);
         const targetTime = Date.now() + initialCountdownDuration;
         character.lastDisplayedTime = null; // Nollställ vid omstart
+        character.currentState = null; // Nollställ vid omstart
 
         character.countdownInterval = setInterval(() => {
             const timeRemaining = targetTime - Date.now();
@@ -61,26 +77,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Anropet uppdaterat för att skicka hela objektet
             formatTime(character, timeRemaining);
-            updateCharacterState(character, timeRemaining);
+            updateCharacterState(character, timeRemaining); // Denna är nu säker att kalla varje sekund
         }, 1000);
     };
 
-    // --- HELT OMARBETAD FUNKTION ---
-    // Denna funktion uppdaterar bara DOM om den visade tiden har ändrats
     const formatTime = (character, ms) => {
         if (!character.timerElement) return;
-
         const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
         const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-
         const newTimeText = `${d}:${h}`;
 
-        // Jämför den nya tiden med den gamla. Uppdatera BARA om de är olika.
         if (newTimeText !== character.lastDisplayedTime) {
             character.timerElement.textContent = newTimeText;
-            character.lastDisplayedTime = newTimeText; // Spara den nya tiden
+            character.lastDisplayedTime = newTimeText;
         }
     };
 
