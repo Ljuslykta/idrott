@@ -12,8 +12,7 @@ const firebaseConfig = {
   measurementId: "G-H3DF8TRNDV"
 };
 
-    // Initiera Firebase
-    const app = firebase.initializeApp(firebaseConfig);
+     const app = firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
     // --- ELEMENT OCH GRUNDLÄGGANDE STRUKTUR ---
@@ -22,22 +21,31 @@ const firebaseConfig = {
     const settingsCog = document.getElementById('settings-cog');
     const settingsModal = document.getElementById('settings-modal');
     const saveSettingsButton = document.getElementById('save-settings-button');
-    const intervalDaysInput = document.getElementById('interval-days');
+    // Hämta de nya, specifika input-fälten
+    const intervalDaysInput1 = document.getElementById('interval-days-1');
+    const intervalDaysInput2 = document.getElementById('interval-days-2');
 
-    // Samma struktur som förut
     const characters = [
-        { id: 1, elements: { image: document.getElementById('character-one'), timer: document.getElementById('timer-one'), button: document.getElementById('complete-button-one'), streak: document.getElementById('streak-counter-one') }, state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null } },
-        { id: 2, elements: { image: document.getElementById('character-two'), timer: document.getElementById('timer-two'), button: document.getElementById('complete-button-two'), streak: document.getElementById('streak-counter-two') }, state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null } }
+        {
+            id: 1,
+            elements: { image: document.getElementById('character-one'), timer: document.getElementById('timer-one'), button: document.getElementById('complete-button-one'), streak: document.getElementById('streak-counter-one'), intervalInput: intervalDaysInput1 },
+            // Varje karaktär får en egen durationDays
+            state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null, durationDays: 3 }
+        },
+        {
+            id: 2,
+            elements: { image: document.getElementById('character-two'), timer: document.getElementById('timer-two'), button: document.getElementById('complete-button-two'), streak: document.getElementById('streak-counter-two'), intervalInput: intervalDaysInput2 },
+            state: { countdownInterval: null, targetTime: 0, streakCount: 0, lastDisplayedTime: null, currentState: null, durationDays: 4 }
+        }
     ];
-    let countdownDuration = parseInt(intervalDaysInput.value) * 24 * 60 * 60 * 1000;
 
     // --- FUNKTION FÖR ATT SPARA DATA TILL FIREBASE ---
     function saveStateToFirebase() {
         const stateToSave = characters.map(char => ({
             targetTime: char.state.targetTime,
-            streakCount: char.state.streakCount
+            streakCount: char.state.streakCount,
+            durationDays: char.state.durationDays // Spara den individuella inställningen
         }));
-        // Spara karaktärsdata under "sökvägen" /characters
         database.ref('characters').set(stateToSave);
     }
 
@@ -49,12 +57,12 @@ const firebaseConfig = {
             if (timeRemaining <= 0) {
                 clearInterval(character.state.countdownInterval);
                 character.elements.timer.textContent = "TIDEN UTE";
-                if(character.state.streakCount > 0) { // Nollställ bara om den inte redan är noll
+                if(character.state.streakCount > 0) {
                     character.state.streakCount = 0;
-                    saveStateToFirebase(); // Spara ändringen
+                    saveStateToFirebase();
                 }
                 updateStreakDisplay(character);
-                updateCharacterState(character, 0);
+                updateCharacterState(character, timeRemaining);
                 return;
             }
             formatTime(character, timeRemaining);
@@ -64,72 +72,85 @@ const firebaseConfig = {
 
     function resetAndStartCountdown(character) {
         character.state.streakCount++;
-        character.state.targetTime = Date.now() + countdownDuration;
+        // Använd karaktärens EGEN durationDays för att beräkna tiden
+        const durationInMs = character.state.durationDays * 24 * 60 * 60 * 1000;
+        character.state.targetTime = Date.now() + durationInMs;
+
         updateStreakDisplay(character);
         startOrContinueCountdown(character);
         saveStateToFirebase();
     }
 
-    // Funktionerna nedan är oförändrade...
-    const updateCharacterState = (character, timeLeft) => { if (!character.elements.image) return; const percentage = timeLeft / countdownDuration; let newState = (percentage < 0.25) ? 'state3' : (percentage < 0.75) ? 'state2' : 'state1'; if (newState !== character.state.currentState) { character.elements.image.src = `images/${newState}.png`; character.state.currentState = newState; } };
+    const updateCharacterState = (character, timeLeft) => {
+        if (!character.elements.image) return;
+        const durationInMs = character.state.durationDays * 24 * 60 * 60 * 1000;
+        const percentage = timeLeft / durationInMs;
+        let newState = (percentage < 0.25) ? 'state3' : (percentage < 0.75) ? 'state2' : 'state1';
+        if (newState !== character.state.currentState) {
+            character.elements.image.src = `images/${newState}.png`;
+            character.state.currentState = newState;
+        }
+    };
+
+    // Oförändrade funktioner
     const formatTime = (character, ms) => { if (!character.elements.timer) return; const d = Math.floor(ms / (1000 * 60 * 60 * 24)).toString().padStart(2, '0'); const h = Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0'); const newTimeText = `${d}:${h}`; if (newTimeText !== character.state.lastDisplayedTime) { character.elements.timer.textContent = newTimeText; character.state.lastDisplayedTime = newTimeText; } };
     const updateStreakDisplay = (character) => { if (!character.elements.streak) return; character.elements.streak.innerHTML = ''; for (let i = 0; i < character.state.streakCount; i++) { const streakBox = document.createElement('div'); streakBox.className = 'streak-box'; character.elements.streak.appendChild(streakBox); } };
 
-    // --- HÄNDELSEHANTERARE (nästan oförändrade) ---
+    // --- HÄNDELSEHANTERARE ---
     characters.forEach(character => { if (character.elements.button) { character.elements.button.addEventListener('click', () => { resetAndStartCountdown(character); }); } });
     if (settingsCog) { settingsCog.addEventListener('click', () => settingsModal.classList.remove('hidden')); }
+
+    // Spara-knappen uppdaterar nu varje karaktärs inställning
     if (saveSettingsButton) {
         saveSettingsButton.addEventListener('click', () => {
-            const days = parseInt(intervalDaysInput.value);
-            if (days > 0) {
-                // Spara inställningen till databasen
-                database.ref('settings/countdownDurationDays').set(days);
-                settingsModal.classList.add('hidden');
-            }
+            // Uppdatera den lokala datan från input-fälten
+            characters[0].state.durationDays = parseInt(intervalDaysInput1.value) || 3;
+            characters[1].state.durationDays = parseInt(intervalDaysInput2.value) || 4;
+
+            // Spara den nya datan till Firebase
+            saveStateToFirebase();
+
+            settingsModal.classList.add('hidden');
+            // Notera: Vi återställer inte längre timers automatiskt,
+            // de nya värdena kommer att användas vid nästa "Pass Slutfört".
         });
     }
 
     // --- INITIALISERING VID SIDLADDNING ---
     function initializeApp() {
-        // Lyssna på ändringar i databasen i realtid
-        database.ref().on('value', (snapshot) => {
-            const data = snapshot.val();
+        database.ref('characters').on('value', (snapshot) => {
+            const savedChars = snapshot.val();
 
-            // Om det finns data i databasen
-            if (data) {
-                // Hämta sparade inställningar
-                if (data.settings && data.settings.countdownDurationDays) {
-                    const savedDays = data.settings.countdownDurationDays;
-                    intervalDaysInput.value = savedDays;
-                    countdownDuration = parseInt(savedDays) * 24 * 60 * 60 * 1000;
-                }
-
-                // Hämta sparad karaktärsdata
-                if(data.characters) {
-                    characters.forEach((char, index) => {
-                        const savedChar = data.characters[index];
-                        if (savedChar) {
-                            char.state.targetTime = savedChar.targetTime;
-                            char.state.streakCount = savedChar.streakCount;
-                        }
-                    });
-                }
+            if (savedChars) {
+                characters.forEach((char, index) => {
+                    const savedChar = savedChars[index];
+                    if (savedChar) {
+                        char.state.targetTime = savedChar.targetTime;
+                        char.state.streakCount = savedChar.streakCount;
+                        // Ladda den individuella inställningen
+                        char.state.durationDays = savedChar.durationDays || char.state.durationDays;
+                        // Uppdatera värdet i inställningsfönstret
+                        char.elements.intervalInput.value = char.state.durationDays;
+                    }
+                });
             }
 
-            // Starta eller fortsätt timers baserat på datan vi nu har
             characters.forEach(character => {
                 if (!character.state.targetTime || character.state.targetTime < Date.now()) {
-                    if (character.state.streakCount === 0) { // Starta bara en helt ny om den inte har någon aktiv timer
-                        character.state.targetTime = Date.now() + countdownDuration;
+                    if (character.state.streakCount === 0) {
+                        const durationInMs = character.state.durationDays * 24 * 60 * 60 * 1000;
+                        character.state.targetTime = Date.now() + durationInMs;
                     }
                 }
                 updateStreakDisplay(character);
                 startOrContinueCountdown(character);
             });
 
-            // Datan har laddats, visa huvudinnehållet och dölj laddaren
             loader.classList.add('hidden');
             mainContent.classList.remove('hidden');
+        }, (error) => {
+            console.error("Kunde inte läsa från Firebase:", error);
+            loader.textContent = "Fel vid anslutning till databasen.";
         });
     }
 

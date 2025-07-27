@@ -120,3 +120,25 @@ body {
 .hidden {
     display: none !important;
 }
+#loader {
+    font-size: 1.5rem;
+    color: var(--light-grey);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Ny styling för inställningsmodalen */
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Lägger till utrymme mellan elementen */
+}
+
+.setting-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}

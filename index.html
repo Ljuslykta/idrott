@@ -9,10 +9,8 @@
 </head>
 <body>
 
-    <!-- Laddningsindikator som visas i början -->
     <div id="loader">Laddar data...</div>
 
-    <!-- Huvudinnehållet är dolt tills datan har laddats -->
     <div class="page-wrapper hidden" id="main-content">
         <div class="character-area">
             <div class="character-wrapper"><img id="character-one" src="images/state1.png" alt="Karaktär 1"></div>
@@ -30,20 +28,24 @@
 
     <div id="settings-cog"><i class="fa-solid fa-gear"></i></div>
 
+    <!-- UPPDATERAT INNEHÅLL I MODALEN -->
     <div id="settings-modal" class="hidden">
         <div class="modal-body">
             <h3>Inställningar</h3>
-            <label for="interval-days">Ange nedräkningsintervall (dagar):</label>
-            <input type="number" id="interval-days" value="3" min="1">
-            <button id="save-settings-button">Spara och starta om</button>
+            <div class="setting-input-group">
+                <label for="interval-days-1">Karaktär 1: Intervall (dagar)</label>
+                <input type="number" id="interval-days-1" value="3" min="1">
+            </div>
+            <div class="setting-input-group">
+                <label for="interval-days-2">Karaktär 2: Intervall (dagar)</label>
+                <input type="number" id="interval-days-2" value="4" min="1">
+            </div>
+            <button id="save-settings-button">Spara</button>
         </div>
     </div>
 
-    <!-- Firebase SDK - MÅSTE vara före din script.js -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <!-- Din egen JavaScript-fil -->
     <script src="script.js"></script>
 </body>
 </html>
